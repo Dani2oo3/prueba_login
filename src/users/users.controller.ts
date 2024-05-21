@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   Req,
@@ -29,7 +28,7 @@ export class UsersController {
   
   @Get('getUsers')
   async getAllUsers() {
-    return await this.usersService.getAllUsers(); // Llama al servicio para obtener todos los usuarios
+    return await this.usersService.getAllUsers();
   }
 
   @Post('change-password')
@@ -38,17 +37,14 @@ export class UsersController {
   }
 
   //eliminar por id
-
   @Delete(':id')
   async deleteUser(@Param('id') userId: string): Promise<void> {
     await this.usersService.deleteUser(userId);
   }
+
   //encontrar por id o email
   @Get(':id')
   async getUserById(@Param('id') userId: string): Promise<User> {
     return await this.usersService.getUserById(userId);
   }
-
-  //enviar correo con cambio de contraseña
-
 }
