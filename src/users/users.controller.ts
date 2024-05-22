@@ -42,9 +42,9 @@ export class UsersController {
     await this.usersService.deleteUser(userId);
   }
 
-  //encontrar por id o email
-  @Get(':id')
-  async getUserById(@Param('id') userId: string): Promise<User> {
-    return await this.usersService.getUserById(userId);
+  //encontrar por email
+  @Get(':email')
+  async getUserByEmail(@Param('email') email: string): Promise<User> {
+    return await this.usersService.getUserByEmail(email);
   }
 }

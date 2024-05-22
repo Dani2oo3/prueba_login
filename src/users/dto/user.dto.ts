@@ -1,4 +1,4 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Prop } from '@nestjs/mongoose';
 import { IsEmail, IsNotEmpty, IsString, MinLength, } from 'class-validator';
 
 export class UserDto {

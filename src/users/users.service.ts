@@ -133,8 +133,8 @@ export class UsersService {
     }
   }
 
-  async getUserById(userId: string): Promise<User> {
-    const user = await this.userModel.findById(userId);
+  async getUserByEmail(email: string): Promise<User> {
+    const user = await this.userModel.findOne({ email });
     if (!user) {
       // Si el usuario no se encuentra, lanza una excepción
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
