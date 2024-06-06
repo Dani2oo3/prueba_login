@@ -14,9 +14,11 @@ export class UsersController {
   @Post('register')
   @ApiOperation({ summary: 'Registrar un nuevo usuario' })
   @ApiResponse({ status: 201, description: 'El usuario ha sido creado.' })
+  @ApiResponse({ status: 400, description: 'Ese email ya esta en uso.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   create(@Body() createUserDto: UserDto) {
-    return this.usersService.create(createUserDto);
+    const { email } = createUserDto;
+    return this.usersService.register(createUserDto, email);
   }
 
   @MessagePattern({ cmd: 'login' })

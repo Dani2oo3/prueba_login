@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ChangePasswordDto, UserDto } from './dto/user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './entities/user.entity';
@@ -14,7 +14,13 @@ type Tokens = {
 export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>, private jwtSvc: JwtService) { }
 
-  async create(createUserDto: UserDto): Promise<User> {
+  async register(createUserDto: UserDto, email: string): Promise<User> {
+    const isEmailExist = await this.userModel.findOne({ email });
+
+    if (isEmailExist) {
+      throw new BadRequestException('User already exist with this email!');
+    }
+
     try {
       const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
@@ -31,7 +37,6 @@ export class UsersService {
 
     }
   }
-
 
   async loginUser(email: string, password: string) {
     try {
