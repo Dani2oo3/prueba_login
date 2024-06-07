@@ -2,7 +2,6 @@ import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { ChangePasswordDto, UserDto } from './dto/user.dto';
 import { User } from './entities/user.entity';
-import { MessagePattern } from '@nestjs/microservices';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('users')
@@ -10,7 +9,13 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @MessagePattern({ cmd: 'register' })
+  @Get('getUsers')
+  @ApiOperation({ summary: 'Obtener todos los usuarios' })
+  @ApiResponse({ status: 200, description: 'Lista de usuarios.', type: [User] })
+  async getAllUsers() {
+    return await this.usersService.getAllUsers();
+  }
+
   @Post('register')
   @ApiOperation({ summary: 'Registrar un nuevo usuario' })
   @ApiResponse({ status: 201, description: 'El usuario ha sido creado.' })
@@ -21,7 +26,6 @@ export class UsersController {
     return this.usersService.register(createUserDto, email);
   }
 
-  @MessagePattern({ cmd: 'login' })
   @Post('login')
   @ApiOperation({ summary: 'Iniciar sesión' })
   @ApiResponse({ status: 200, description: 'Login exitoso.' })
@@ -31,15 +35,6 @@ export class UsersController {
     return this.usersService.loginUser(email, password);
   }
 
-  @MessagePattern({ cmd: 'getUsers' })
-  @Get('getUsers')
-  @ApiOperation({ summary: 'Obtener todos los usuarios' })
-  @ApiResponse({ status: 200, description: 'Lista de usuarios.', type: [User] })
-  async getAllUsers() {
-    return await this.usersService.getAllUsers();
-  }
-
-  @MessagePattern({ cmd: 'change-password' })
   @Post('change-password')
   @ApiOperation({ summary: 'Cambiar contraseña' })
   @ApiResponse({ status: 200, description: 'Contraseña cambiada exitosamente.' })
@@ -48,7 +43,6 @@ export class UsersController {
     return await this.usersService.changePassword(changePasswordDto);
   }
 
-  @MessagePattern({ cmd: 'delete:id' })
   @Delete(':id')
   @ApiOperation({ summary: 'Eliminar usuario por ID' })
   @ApiResponse({ status: 200, description: 'Usuario eliminado exitosamente.' })
@@ -57,7 +51,6 @@ export class UsersController {
     await this.usersService.deleteUser(userId);
   }
 
-  @MessagePattern({ cmd: 'get:email' })
   @Get(':email')
   @ApiOperation({ summary: 'Obtener usuario por correo electrónico' })
   @ApiResponse({ status: 200, description: 'Usuario encontrado.', type: User })

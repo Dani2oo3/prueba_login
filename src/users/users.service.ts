@@ -5,6 +5,8 @@ import { User, UserDocument } from './entities/user.entity';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import * as Filter from 'bad-words';
+
 type Tokens = {
   access_token: string,
   refresh_token: string
@@ -12,14 +14,21 @@ type Tokens = {
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>, private jwtSvc: JwtService) { }
+  private filter: Filter;
+
+  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>, private jwtSvc: JwtService) {
+    this.filter = new Filter();
+  }
 
   async register(createUserDto: UserDto, email: string): Promise<User> {
     const isEmailExist = await this.userModel.findOne({ email });
 
     if (isEmailExist) {
-      throw new BadRequestException('User already exist with this email!');
+      throw new BadRequestException('User already exists with this email!');
     }
+
+    // Validar nombre de usuario
+    this.validateUsername(createUserDto.name);
 
     try {
       const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
@@ -32,9 +41,14 @@ export class UsersService {
       return await newUser.save();
 
     } catch (error) {
-
       throw new HttpException('Please check your credentials', HttpStatus.UNAUTHORIZED);
+    }
+  }
 
+  private validateUsername(username: string): void {
+    // Verificar con bad-words
+    if (this.filter.isProfane(username)) {
+      throw new BadRequestException('El nombre de usuario contiene palabras ofensivas.');
     }
   }
 
@@ -59,7 +73,6 @@ export class UsersService {
             secret: 'jwt secret_refresh',
             expiresIn: '7d'
           }),
-
           message: 'Login Successful'
         };
       }
@@ -67,13 +80,10 @@ export class UsersService {
     } catch (error) {
       throw new HttpException('Please check your credentials', HttpStatus.UNAUTHORIZED);
     }
-
   }
 
   async refreshToken(refreshToken: string) {
-
     try {
-
       const user = this.jwtSvc.verify(refreshToken, { secret: 'jwt_secret_refresh' });
       const payload = { sub: user._id, email: user.email, name: user.name };
       const { access_token, refresh_token } = await this.generateTokens(payload);
