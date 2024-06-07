@@ -22,29 +22,59 @@ export class UsersService {
 
   async register(createUserDto: UserDto, email: string): Promise<User> {
     const isEmailExist = await this.userModel.findOne({ email });
-
+  
     if (isEmailExist) {
       throw new BadRequestException('User already exists with this email!');
     }
-
+  
+    // Normalizar el nombre de usuario (sin espacios y en minúsculas)
+    const normalizedUsername = this.normalizeUsername(createUserDto.name);
+  
+    // Reemplazar números por letras correspondientes
+    const usernameWithLetters = this.replaceNumbersWithLetters(normalizedUsername);
+  
     // Validar nombre de usuario
-    this.validateUsername(createUserDto.name);
-
+    this.validateUsername(usernameWithLetters);
+  
     try {
       const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-
+  
       const newUser = new this.userModel({
         ...createUserDto,
+        name: usernameWithLetters, // Asignar el nombre normalizado y sin números
         password: hashedPassword
       });
-
+  
       return await newUser.save();
-
+  
     } catch (error) {
       throw new HttpException('Please check your credentials', HttpStatus.UNAUTHORIZED);
     }
   }
-
+  
+  private normalizeUsername(username: string): string {
+    // Eliminar espacios y convertir a minúsculas
+    return username.replace(/\s/g, '').toLowerCase();
+  }
+  
+  private replaceNumbersWithLetters(username: string): string {
+    // Mapear números a letras correspondientes
+    const numberToLetterMap = {
+      '0': 'o',
+      '1': 'l',
+      '3': 'e',
+      '4': 'a',
+      '5': 's',
+      '6': 'g',
+      '7': 't',
+      '8': 'b',
+      '9': 'g'
+    };
+  
+    // Reemplazar cada número por su letra correspondiente
+    return username.replace(/[0-9]/g, match => numberToLetterMap[match]);
+  }
+  
   private validateUsername(username: string): void {
     // Verificar con bad-words
     if (this.filter.isProfane(username)) {
