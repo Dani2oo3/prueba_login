@@ -1,13 +1,11 @@
 import { Module } from '@nestjs/common';
 import { UsersModule } from './user-service/users.module';
-import { MongooseModule } from '@nestjs/mongoose';
-import { ScoreModule } from './score/score.module';
+import { ScoreModule } from './score/users.module';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
   imports: [
     UsersModule,
-    MongooseModule.forRoot('mongodb://localhost/nest2'),
     ScoreModule,
     ClientsModule.register([
       {
